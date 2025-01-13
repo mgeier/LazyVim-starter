@@ -5,8 +5,13 @@
 -- globally disable auto-formatting
 vim.g.autoformat = false
 
+-- Set to `false` to globally disable all snacks animations
+vim.g.snacks_animate = false
+
 local opt = vim.opt
 
+opt.cursorline = false
+opt.ignorecase = false
 opt.number = false
 opt.relativenumber = false
 opt.wrap = true
