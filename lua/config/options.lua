@@ -10,6 +10,7 @@ vim.g.snacks_animate = false
 
 local opt = vim.opt
 
+-- opt.clipboard = ""
 opt.cursorline = false
 opt.ignorecase = false
 opt.number = false
