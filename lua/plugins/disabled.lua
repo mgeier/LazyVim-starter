@@ -1,7 +1,7 @@
 return {
   { "catppuccin/nvim", enabled = false },
-  { "echasnovski/mini.indentscope", enabled = false },
-  { "echasnovski/mini.pairs", enabled = false },
+  { "nvim-mini/mini.indentscope", enabled = false },
+  { "nvim-mini/mini.pairs", enabled = false },
   { "folke/flash.nvim", enabled = false },
   { "folke/noice.nvim", enabled = false },
   { "folke/tokyonight.nvim", enabled = false },
