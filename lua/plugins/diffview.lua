@@ -1,5 +1,6 @@
--- Preserve the cursor/scroll position in the revision window when stepping
--- through commits in a file history view.
+-- Preserve the cursor/scroll position in the revision window of a file history
+-- view: both when opening it (start where :FileHistory was called from) and
+-- when stepping through commits with <tab>/<s-tab>.
 --
 -- Diffview resets it: on every new file entry it emits `file_open_new`, and its
 -- own listener for that event does `set_cursor(main_win, 1, 0)` (see
@@ -12,14 +13,42 @@
 -- -- everything after `file_open_post` in FileHistoryView:_set_file is
 -- synchronous, so the scheduled callback lands after the reset and after
 -- Layout:sync_scroll.
+
+local function realpath(path)
+  if path == nil or path == "" then
+    return nil
+  end
+  return vim.uv.fs_realpath(path) or path
+end
+
+-- Position captured by :FileHistory, consumed by the first revision that the
+-- resulting history view opens.
+local pending
+
 local function keep_position(view)
   if view.class:name() ~= "FileHistoryView" then
     return
   end
 
-  local saved
+  local saved, expect_path
+  if pending then
+    saved, expect_path = pending.view, pending.path
+    pending = nil
+  end
+  local first = true
 
   view.emitter:on("file_open_pre", function(_, new_file)
+    if first then
+      -- Initial open: the main window still shows the null buffer, so there is
+      -- nothing to capture -- keep the position seeded by :FileHistory, as long
+      -- as it really is the file we were called from.
+      first = false
+      if expect_path and realpath(new_file and new_file.absolute_path) ~= expect_path then
+        saved = nil
+      end
+      return
+    end
+
     saved = nil
     local win = view.cur_layout and view.cur_layout:get_main_win()
     if not (win and win:is_valid() and win.file) then
@@ -65,6 +94,10 @@ return {
       -- the config, otherwise setup() would overwrite the layout below.
       require("lazy").load({ plugins = { "diffview.nvim" } })
       require("diffview.config").get_config().view.file_history.layout = "diff1_plain"
+      pending = {
+        path = realpath(vim.api.nvim_buf_get_name(0)),
+        view = vim.fn.winsaveview(),
+      }
       if opts.range == 0 then
         vim.cmd("DiffviewFileHistory %")
       else
