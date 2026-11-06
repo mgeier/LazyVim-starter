@@ -16,3 +16,5 @@ opt.ignorecase = false
 opt.number = false
 opt.relativenumber = false
 opt.wrap = true
+
+vim.g.lazyvim_python_lsp = "basedpyright"
